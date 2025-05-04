@@ -127,7 +127,7 @@ def predict_future_expense(username):
     else:
         return "Not enough data for prediction"
 
-# Streamlit UI with Improved Session Handling
+# Streamlit UI with Improved Navigation & Session Handling
 def finance_ui():
     st.title("💰 Welcome to Personal Finance Planner!")
     st.write("Track expenses, predict spending & manage budgets easily.")
@@ -135,11 +135,12 @@ def finance_ui():
     # Initialize session state properly
     if "username" not in st.session_state:
         st.session_state.username = ""
+    
+    if "page" not in st.session_state:
+        st.session_state.page = "login"
 
-    if st.session_state.username:
-        st.success(f"Welcome back, {st.session_state.username}! 🎉")
-
-        # Expense Tracking UI
+    if st.session_state.page == "dashboard":
+        st.write(f"🎉 Welcome, {st.session_state.username}! You are now in the dashboard.")
         st.write("### Enter Your Transaction Details")
         transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
         amount = st.number_input("Enter Amount (₹)", min_value=1.0)
@@ -150,12 +151,10 @@ def finance_ui():
             add_transaction(st.session_state.username, transaction_type, amount, category, str(date))
             st.success("✅ Transaction Added Successfully!")
 
-        # Display Transactions
         st.write("### Your Transactions")
         df = fetch_transactions(st.session_state.username)
         st.dataframe(df)
 
-        # Show Expense Charts
         if st.button("Show Expense Bar Chart"):
             visualize_expenses(st.session_state.username)
 
@@ -165,7 +164,6 @@ def finance_ui():
         if st.button("Show Monthly Trends"):
             visualize_monthly_trends(st.session_state.username)
 
-        # Predict Future Expense
         if st.button("Predict Next Month’s Expense"):
             prediction = predict_future_expense(st.session_state.username)
             st.success(f"Projected Expense for Next Month: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
@@ -179,7 +177,9 @@ def finance_ui():
         if st.button("Login"):
             if authenticate_user(username, password):
                 st.session_state.username = username
+                st.session_state.page = "dashboard"
                 st.success("Login successful! 🎉")
+                st.experimental_rerun()
             else:
                 st.error("Invalid username or password!")
 
