@@ -1,4 +1,3 @@
-from pickle import NONE
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,7 +6,6 @@ import bcrypt
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
-st.title("PERSONAL FINANCE PLANNER")
 # Initialize user authentication database
 def init_user_db():
     conn = sqlite3.connect("users.db")
@@ -129,14 +127,14 @@ def predict_future_expense(username):
     else:
         return "Not enough data for prediction"
 
-# Streamlit UI with Welcome Message & User Authentication
+# Streamlit UI with Improved Session Handling
 def finance_ui():
-    st.title(" Welcome to Personal Finance Planner!")
+    st.title("💰 Welcome to Personal Finance Planner!")
     st.write("Track expenses, predict spending & manage budgets easily.")
 
-    if "username" not in st.session_state or st.session_state.username is NONE:
-        st.write("Welcome to personal Finance Planner!")
-        st.write("Please login or register to begin tacking your expenses")
+    # Initialize session state properly
+    if "username" not in st.session_state:
+        st.session_state.username = ""
 
     if st.session_state.username:
         st.success(f"Welcome back, {st.session_state.username}! 🎉")
