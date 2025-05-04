@@ -193,7 +193,7 @@ def finance_ui():
                 st.error("Please enter both username and password.")
 
 # Initialize Databases & Run App
-if __name__ == "_main_":
+if __name__ == "__main__":
     init_user_db()
     init_finance_db()
     finance_ui()
