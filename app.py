@@ -179,7 +179,6 @@ def finance_ui():
                 st.session_state.username = username
                 st.session_state.page = "dashboard"
                 st.success("Login successful! 🎉")
-                st.experimental_rerun()
             else:
                 st.error("Invalid username or password!")
 
