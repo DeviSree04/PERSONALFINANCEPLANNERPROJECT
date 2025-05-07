@@ -152,7 +152,7 @@ def finance_ui():
             visualize_expenses(st.session_state["username"])
 
 # Run app
-if _name_ == "_main_":
+if __name__ == "__main__":
     init_user_db()
     init_finance_db()
     finance_ui()
