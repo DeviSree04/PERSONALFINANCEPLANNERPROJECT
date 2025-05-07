@@ -6,7 +6,7 @@ import bcrypt
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
-# Initialize databases
+# Initialize user authentication database
 def init_user_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -16,6 +16,34 @@ def init_user_db():
     conn.commit()
     conn.close()
 
+# Register new users with duplicate check
+def register_user(username, password):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users WHERE username=?", (username,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        conn.close()
+        return "❌ Username already exists! Choose a different one."
+
+    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+    conn.commit()
+    conn.close()
+    return "✅ User registered successfully!"
+
+# Verify user login
+def authenticate_user(username, password):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT password FROM users WHERE username=?", (username,))
+    result = cursor.fetchone()
+    conn.close()
+
+    return result and bcrypt.checkpw(password.encode(), result[0])
+
+# Initialize finance database
 def init_finance_db():
     conn = sqlite3.connect("finance.db")
     cursor = conn.cursor()
@@ -29,29 +57,7 @@ def init_finance_db():
     conn.commit()
     conn.close()
 
-# Register and authenticate users
-def register_user(username, password):
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT username FROM users WHERE username=?", (username,))
-    if cursor.fetchone():
-        conn.close()
-        return "❌ Username already exists! Choose a different one."
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
-    conn.commit()
-    conn.close()
-    return "✅ User registered successfully!"
-
-def authenticate_user(username, password):
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT password FROM users WHERE username=?", (username,))
-    result = cursor.fetchone()
-    conn.close()
-    return result and bcrypt.checkpw(password.encode(), result[0])
-
-# Expense tracking functions
+# Add transactions
 def add_transaction(username, transaction_type, amount, category, date):
     conn = sqlite3.connect("finance.db")
     cursor = conn.cursor()
@@ -60,17 +66,19 @@ def add_transaction(username, transaction_type, amount, category, date):
     conn.commit()
     conn.close()
 
+# Fetch transactions for the logged-in user
 def fetch_transactions(username):
     conn = sqlite3.connect("finance.db")
     df = pd.read_sql_query("SELECT * FROM transactions WHERE username=?", conn, params=(username,))
     conn.close()
     return df
 
-# Data Visualization
+# Bar Chart - Expense Breakdown
 def visualize_expenses(username):
     df = fetch_transactions(username)
     expense_df = df[df["type"] == "Expense"]
     category_totals = expense_df.groupby("category")["amount"].sum()
+    
     plt.figure(figsize=(8, 5))
     category_totals.plot(kind="bar", color="skyblue")
     plt.xlabel("Category")
@@ -82,11 +90,11 @@ def visualize_expenses(username):
 
 # Streamlit UI
 def finance_ui():
-    st.title("💰 Welcome to Personal Finance Planner!")
+    st.title("💰 Personal Finance Planner")
 
     # Initialize session state
     if "username" not in st.session_state:
-        st.session_state.username = ""
+        st.session_state.username = None
 
     if "page" not in st.session_state:
         st.session_state.page = "welcome"
