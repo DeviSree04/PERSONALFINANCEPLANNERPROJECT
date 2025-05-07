@@ -90,14 +90,14 @@ def visualize_expenses(username):
 
 # Streamlit UI
 def finance_ui():
-    st.title("💰 Personal Finance Planner")
+    st.title("Personal Finance Planner")
 
     # Initialize session state
     if "username" not in st.session_state:
         st.session_state.username = None
 
     if "page" not in st.session_state:
-        st.session_state.page = "welcome"
+        st.session_state["page"] = "welcome"
 
     # Welcome Page
     if st.session_state.page == "welcome":
@@ -108,7 +108,7 @@ def finance_ui():
 
     # Login / Register Page
     elif st.session_state.page == "login":
-        st.write("### 🔐 Login / Register")
+        st.write("Login / Register")
         username_input = st.text_input("Username", key="username")
         password_input = st.text_input("Password", type="password", key="password")
 
