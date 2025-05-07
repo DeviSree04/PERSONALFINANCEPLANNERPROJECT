@@ -46,7 +46,7 @@ def authenticate_user(username, password):
         return True
     return False
 
-if st.session_state.page == "welcome":
+if st.session_state.page == "login":
     st.title("Personal Finance Planner")
     st.write("Track expenses, forecast spending, and manage budgets easily.")
     if st.button("Proceed to Login"):
