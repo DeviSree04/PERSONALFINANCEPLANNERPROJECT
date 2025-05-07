@@ -154,7 +154,7 @@ def finance_ui():
         
         if st.button("Proceed to Login"):
             st.session_state.page = "login"
-            st.experimental_rerun()
+            
 
     elif st.session_state.page == "login":
         st.write("### 🔐 Login / Register")
@@ -166,7 +166,7 @@ def finance_ui():
                 st.session_state.username = username_input
                 st.session_state.page = "dashboard"
                 st.success("Login successful! 🎉")
-                st.experimental_rerun()
+                
             else:
                 st.error("Invalid username or password!")
 
