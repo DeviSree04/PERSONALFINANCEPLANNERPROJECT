@@ -25,13 +25,13 @@ def register_user(username, password):
 
     if existing_user:
         conn.close()
-        return "❌ Username already exists! Choose a different one."
+        return " Username already exists! Choose a different one."
 
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
     conn.commit()
     conn.close()
-    return "✅ User registered successfully!"
+    return "User registered successfully!"
 
 # Verify user login
 def authenticate_user(username, password):
@@ -104,7 +104,7 @@ def finance_ui():
         st.write("Track expenses, forecast spending, and manage budgets easily.")
         if st.button("Proceed to Login"):
             st.session_state["page"] = "login"
-            st.experimental_rerun()
+            st.rerun()
 
     # Login / Register Page
     elif st.session_state["page"] == "login":
@@ -118,7 +118,7 @@ def finance_ui():
                 st.session_state["username"] = username_input  # ✅ Works now!
                 st.session_state["page"] = "dashboard"
                 st.success("Login successful! 🎉")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid username or password!")
 
