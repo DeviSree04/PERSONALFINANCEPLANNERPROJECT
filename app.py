@@ -12,7 +12,7 @@ def init_user_db():
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                         username TEXT PRIMARY KEY,
-                        password TEXT)''')
+                        password BLOB)''')  # Store hashed password as BLOB
     conn.commit()
     conn.close()
 
@@ -25,7 +25,7 @@ def register_user(username, password):
 
     if existing_user:
         conn.close()
-        return " Username already exists! Choose a different one."
+        return "Username already exists! Choose a different one."
 
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
@@ -48,7 +48,7 @@ def init_finance_db():
     conn = sqlite3.connect("finance.db")
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS transactions (
-                        id INTEGER PRIMARY KEY,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         username TEXT,
                         type TEXT,
                         amount REAL,
@@ -77,25 +77,27 @@ def fetch_transactions(username):
 def visualize_expenses(username):
     df = fetch_transactions(username)
     expense_df = df[df["type"] == "Expense"]
+    if expense_df.empty:
+        st.warning("No expenses to display.")
+        return
+
     category_totals = expense_df.groupby("category")["amount"].sum()
-    
-    plt.figure(figsize=(8, 5))
-    category_totals.plot(kind="bar", color="skyblue")
-    plt.xlabel("Category")
-    plt.ylabel("Amount Spent")
-    plt.title("Expense Breakdown")
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    category_totals.plot(kind="bar", color="skyblue", ax=ax)
+    ax.set_xlabel("Category")
+    ax.set_ylabel("Amount Spent")
+    ax.set_title("Expense Breakdown")
+    ax.grid(True)
     plt.xticks(rotation=45)
-    plt.grid()
-    st.pyplot(plt)
+    st.pyplot(fig)
 
 # Streamlit UI
 def finance_ui():
     st.title("💰 Personal Finance Planner")
 
-    # Initialize session state properly
     if "username" not in st.session_state:
-        st.session_state["username"] = None  # ✅ Use dictionary-style session state access
-
+        st.session_state["username"] = None
     if "page" not in st.session_state:
         st.session_state["page"] = "welcome"
 
@@ -109,14 +111,14 @@ def finance_ui():
     # Login / Register Page
     elif st.session_state["page"] == "login":
         st.write("### 🔐 Login / Register")
-        username_input = st.text_input("Username", key="username")
-        password_input = st.text_input("Password", type="password", key="password")
+        username_input = st.text_input("Username")
+        password_input = st.text_input("Password", type="password")
 
         if st.button("Login"):
             if authenticate_user(username_input, password_input):
-                st.session_state["username"] = username_input  # ✅ Works now!
+                st.session_state["username"] = username_input
                 st.session_state["page"] = "dashboard"
-                st.success("Login successful! 🎉")
+                st.success("Login successful!")
                 st.rerun()
             else:
                 st.error("Invalid username or password!")
@@ -132,7 +134,6 @@ def finance_ui():
     elif st.session_state["page"] == "dashboard":
         st.write(f"🎉 Welcome, {st.session_state['username']}! You are now in the dashboard.")
 
-        # Transaction Entry
         st.write("### Enter Your Transaction Details")
         transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
         amount = st.number_input("Enter Amount (₹)", min_value=1.0)
@@ -143,17 +144,15 @@ def finance_ui():
             add_transaction(st.session_state["username"], transaction_type, amount, category, str(date))
             st.success("✅ Transaction Added Successfully!")
 
-        # Show Transactions
         st.write("### Your Transactions")
         df = fetch_transactions(st.session_state["username"])
         st.dataframe(df)
 
-        # Expense Visualization
         if st.button("Show Expense Breakdown"):
             visualize_expenses(st.session_state["username"])
 
-# Initialize Databases & Run App
-if __name__ == "__main__":
+# Run app
+if _name_ == "_main_":
     init_user_db()
     init_finance_db()
     finance_ui()
