@@ -26,13 +26,13 @@ def register_user(username, password):
 
     if existing_user:
         conn.close()
-        return "Username already exists! Choose a different one."
+        return "❌ Username already exists! Choose a different one."
 
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
     conn.commit()
     conn.close()
-    return "User registered successfully!"
+    return "✅ User registered successfully!"
 
 # Verify user login
 def authenticate_user(username, password):
@@ -45,37 +45,6 @@ def authenticate_user(username, password):
     if result and bcrypt.checkpw(password.encode(), result[0]):
         return True
     return False
-
-if st.session_state.page == "login":
-    st.title("Personal Finance Planner")
-    st.write("Track expenses, forecast spending, and manage budgets easily.")
-    if st.button("Proceed to Login"):
-        st.session_state.page = "login"
-        st.experimental_rerun()
-
-elif st.session_state.page == "login":
-    st.write("Login / Register")
-    username_input = st.text_input("Username", key="username")
-    password_input = st.text_input("Password", type="password", key="password")
-
-    if st.button("Login"):
-        if authenticate_user(username_input, password_input):
-            st.session_state.username = username_input
-            st.session_state.page = "dashboard"
-            st.success("Login successful! 🎉")
-            st.experimental_rerun()
-        else:
-            st.error("Invalid username or password!")
-
-    if st.button("Register"):
-        if username_input and password_input:
-            msg = register_user(username_input, password_input)
-            st.success(msg)
-        else:
-            st.error("Please enter both username and password!")
-
-elif st.session_state.page == "dashboard":
-    st.write(f"Welcome, {st.session_state.username}! You are now in the dashboard.")
 
 # Initialize finance database
 def init_finance_db():
@@ -110,7 +79,7 @@ def fetch_transactions(username):
 # Bar Chart - Expense Breakdown
 def visualize_expenses(username):
     df = fetch_transactions(username)
-    expense_df = df[df["type"] == "expense"]
+    expense_df = df[df["type"] == "Expense"]
     category_totals = expense_df.groupby("category")["amount"].sum()
 
     plt.figure(figsize=(8, 5))
@@ -125,7 +94,7 @@ def visualize_expenses(username):
 # Pie Chart - Expense Distribution
 def visualize_pie_chart(username):
     df = fetch_transactions(username)
-    expense_df = df[df["type"] == "expense"]
+    expense_df = df[df["type"] == "Expense"]
     category_totals = expense_df.groupby("category")["amount"].sum()
 
     plt.figure(figsize=(7, 7))
@@ -138,7 +107,7 @@ def visualize_pie_chart(username):
 def visualize_monthly_trends(username):
     df = fetch_transactions(username)
     df["date"] = pd.to_datetime(df["date"])
-    expense_df = df[df["type"] == "expense"]
+    expense_df = df[df["type"] == "Expense"]
     monthly_totals = expense_df.groupby(df["date"].dt.strftime("%Y-%m"))["amount"].sum()
 
     plt.figure(figsize=(10, 5))
@@ -169,7 +138,7 @@ def predict_future_expense(username):
 
 # Streamlit UI with Improved Navigation & Session Handling
 def finance_ui():
-    st.title("Welcome to Personal Finance Planner!")
+    st.title("💰 Welcome to Personal Finance Planner!")
     st.write("Track expenses, predict spending & manage budgets easily.")
 
     # Initialize session state properly
@@ -179,38 +148,16 @@ def finance_ui():
     if "page" not in st.session_state:
         st.session_state.page = "welcome"
 
-    if st.session_state.page == "dashboard":
-        st.write(f"Welcome, {st.session_state.username}! You are now in the dashboard.")
-        st.write("### Enter Your Transaction Details")
-        transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
-        amount = st.number_input("Enter Amount (₹)", min_value=1.0)
-        category = st.text_input("Expense Category (e.g., Food, Rent, Travel)")
-        date = st.date_input("Transaction Date")
+    if st.session_state.page == "welcome":
+        st.write("### Welcome to Personal Finance Planner!")
+        st.write("Track expenses, forecast spending, and manage budgets easily.")
+        
+        if st.button("Proceed to Login"):
+            st.session_state.page = "login"
+            st.experimental_rerun()
 
-        if st.button("Add Transaction"):
-            add_transaction(st.session_state.username, transaction_type, amount, category, str(date))
-            st.success("Transaction Added Successfully!")
-
-        st.write("### Your Transactions")
-        df = fetch_transactions(st.session_state.username)
-        st.dataframe(df)
-
-        if st.button("Show Expense Bar Chart"):
-            visualize_expenses(st.session_state.username)
-
-        if st.button("Show Expense Pie Chart"):
-            visualize_pie_chart(st.session_state.username)
-
-        if st.button("Show Monthly Trends"):
-            visualize_monthly_trends(st.session_state.username)
-
-        if st.button("Predict Next Month’s Expense"):
-            prediction = predict_future_expense(st.session_state.username)
-            st.success(f"Projected Expense for Next Month: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
-
-    else:
-        st.write("Login / Register")
-
+    elif st.session_state.page == "login":
+        st.write("### 🔐 Login / Register")
         username_input = st.text_input("Username", key="username")
         password_input = st.text_input("Password", type="password", key="password")
 
@@ -218,7 +165,7 @@ def finance_ui():
             if authenticate_user(username_input, password_input):
                 st.session_state.username = username_input
                 st.session_state.page = "dashboard"
-                st.success("Login successful!")
+                st.success("Login successful! 🎉")
                 st.experimental_rerun()
             else:
                 st.error("Invalid username or password!")
@@ -228,10 +175,34 @@ def finance_ui():
                 msg = register_user(username_input, password_input)
                 st.success(msg)
             else:
-                st.error("Please enter both username and password.")
+                st.error("Please enter both username and password!")
+
+    elif st.session_state.page == "dashboard":
+        st.write(f"🎉 Welcome, {st.session_state.username}! You are now in the dashboard.")
+        
+        st.write("### Enter Your Transaction Details")
+        transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
+        amount = st.number_input("Enter Amount (₹)", min_value=1.0)
+        category = st.text_input("Expense Category (e.g., Food, Rent, Travel)")
+        date = st.date_input("Transaction Date")
+
+        if st.button("Add Transaction"):
+            add_transaction(st.session_state.username, transaction_type, amount, category, str(date))
+            st.success("✅ Transaction Added Successfully!")
+
+        st.write("### Your Transactions")
+        df = fetch_transactions(st.session_state.username)
+        st.dataframe(df)
+
+        if st.button("Show Expense Trends"):
+            visualize_monthly_trends(st.session_state.username)
+
+        if st.button("Predict Next Month’s Expense"):
+            prediction = predict_future_expense(st.session_state.username)
+            st.success(f"Projected Expense: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
 
 # Initialize Databases & Run App
-if __name__ == "__main__":
+if _name_ == "_main_":
     init_user_db()
     init_finance_db()
     finance_ui()
