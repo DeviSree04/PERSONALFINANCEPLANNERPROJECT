@@ -90,33 +90,34 @@ def visualize_expenses(username):
 
 # Streamlit UI
 def finance_ui():
-    st.title("Personal Finance Planner")
+    st.title("💰 Personal Finance Planner")
 
-    # Initialize session state
+    # Initialize session state properly
     if "username" not in st.session_state:
-        username = st.session_state.get("username", "")
+        st.session_state["username"] = None  # ✅ Use dictionary-style session state access
 
     if "page" not in st.session_state:
         st.session_state["page"] = "welcome"
 
     # Welcome Page
-    if st.session_state.page == "welcome":
+    if st.session_state["page"] == "welcome":
         st.write("Track expenses, forecast spending, and manage budgets easily.")
         if st.button("Proceed to Login"):
-            st.session_state.page = "login"
+            st.session_state["page"] = "login"
             st.experimental_rerun()
 
     # Login / Register Page
-    elif st.session_state.page == "login":
-        st.write("Login / Register")
+    elif st.session_state["page"] == "login":
+        st.write("### 🔐 Login / Register")
         username_input = st.text_input("Username", key="username")
         password_input = st.text_input("Password", type="password", key="password")
 
         if st.button("Login"):
+            username = st.session_state.get("username", "")  # ✅ Retrieve safely
             if authenticate_user(username_input, password_input):
-                st.session_state["username"] = username
+                st.session_state["username"] = username_input  # ✅ Works now!
                 st.session_state["page"] = "dashboard"
-                st.success("Login successful!")
+                st.success("Login successful! 🎉")
                 st.experimental_rerun()
             else:
                 st.error("Invalid username or password!")
@@ -129,28 +130,28 @@ def finance_ui():
                 st.error("Please enter both username and password!")
 
     # Dashboard Page
-    elif st.session_state.page == "dashboard":
-        st.write(f" Welcome, {st.session_state.username}! You are now in the dashboard.")
+    elif st.session_state["page"] == "dashboard":
+        st.write(f"🎉 Welcome, {st.session_state['username']}! You are now in the dashboard.")
 
         # Transaction Entry
-        st.write("Enter Your Transaction Details")
+        st.write("### Enter Your Transaction Details")
         transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
         amount = st.number_input("Enter Amount (₹)", min_value=1.0)
         category = st.text_input("Expense Category (e.g., Food, Rent, Travel)")
         date = st.date_input("Transaction Date")
 
         if st.button("Add Transaction"):
-            add_transaction(st.session_state.username, transaction_type, amount, category, str(date))
+            add_transaction(st.session_state["username"], transaction_type, amount, category, str(date))
             st.success("✅ Transaction Added Successfully!")
 
         # Show Transactions
         st.write("### Your Transactions")
-        df = fetch_transactions(st.session_state.username)
+        df = fetch_transactions(st.session_state["username"])
         st.dataframe(df)
 
         # Expense Visualization
         if st.button("Show Expense Breakdown"):
-            visualize_expenses(st.session_state.username)
+            visualize_expenses(st.session_state["username"])
 
 # Initialize Databases & Run App
 if __name__ == "__main__":
