@@ -177,7 +177,7 @@ def finance_ui():
         st.session_state.username = ""
 
     if "page" not in st.session_state:
-        st.session_state.page = "login"
+        st.session_state.page = "welcome"
 
     if st.session_state.page == "dashboard":
         st.write(f"Welcome, {st.session_state.username}! You are now in the dashboard.")
