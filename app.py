@@ -183,7 +183,7 @@ def finance_ui():
 
 # ---------------------- Main ----------------------
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     st.write("Current working directory:", os.getcwd())
     st.write("User DB Path:", os.path.abspath("users.db"))
     st.write("Finance DB Path:", os.path.abspath("finance.db"))
