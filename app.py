@@ -202,7 +202,7 @@ def finance_ui():
             st.success(f"Projected Expense: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
 
 # Initialize Databases & Run App
-if _name_ == "_main_":
+if __name__ == "__main__":
     init_user_db()
     init_finance_db()
     finance_ui()
