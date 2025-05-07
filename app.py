@@ -16,14 +16,23 @@ def init_user_db():
     conn.commit()
     conn.close()
 
-# Register new users
+# Register new users with duplicate check
 def register_user(username, password):
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
+
+    cursor.execute("SELECT username FROM users WHERE username=?", (username,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        conn.close()
+        return "Username already exists! Choose a different one."
+
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
     conn.commit()
     conn.close()
+    return "User registered successfully!"
 
 # Verify user login
 def authenticate_user(username, password):
@@ -36,6 +45,37 @@ def authenticate_user(username, password):
     if result and bcrypt.checkpw(password.encode(), result[0]):
         return True
     return False
+
+if st.session_state.page == "welcome":
+    st.title("Personal Finance Planner")
+    st.write("Track expenses, forecast spending, and manage budgets easily.")
+    if st.button("Proceed to Login"):
+        st.session_state.page = "login"
+        st.experimental_rerun()
+
+elif st.session_state.page == "login":
+    st.write("Login / Register")
+    username_input = st.text_input("Username", key="username")
+    password_input = st.text_input("Password", type="password", key="password")
+
+    if st.button("Login"):
+        if authenticate_user(username_input, password_input):
+            st.session_state.username = username_input
+            st.session_state.page = "dashboard"
+            st.success("Login successful! 🎉")
+            st.experimental_rerun()
+        else:
+            st.error("Invalid username or password!")
+
+    if st.button("Register"):
+        if username_input and password_input:
+            msg = register_user(username_input, password_input)
+            st.success(msg)
+        else:
+            st.error("Please enter both username and password!")
+
+elif st.session_state.page == "dashboard":
+    st.write(f"Welcome, {st.session_state.username}! You are now in the dashboard.")
 
 # Initialize finance database
 def init_finance_db():
@@ -129,18 +169,18 @@ def predict_future_expense(username):
 
 # Streamlit UI with Improved Navigation & Session Handling
 def finance_ui():
-    st.title("💰 Welcome to Personal Finance Planner!")
+    st.title("Welcome to Personal Finance Planner!")
     st.write("Track expenses, predict spending & manage budgets easily.")
 
     # Initialize session state properly
     if "username" not in st.session_state:
         st.session_state.username = ""
-    
+
     if "page" not in st.session_state:
         st.session_state.page = "login"
 
     if st.session_state.page == "dashboard":
-        st.write(f"🎉 Welcome, {st.session_state.username}! You are now in the dashboard.")
+        st.write(f"Welcome, {st.session_state.username}! You are now in the dashboard.")
         st.write("### Enter Your Transaction Details")
         transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
         amount = st.number_input("Enter Amount (₹)", min_value=1.0)
@@ -149,7 +189,7 @@ def finance_ui():
 
         if st.button("Add Transaction"):
             add_transaction(st.session_state.username, transaction_type, amount, category, str(date))
-            st.success("✅ Transaction Added Successfully!")
+            st.success("Transaction Added Successfully!")
 
         st.write("### Your Transactions")
         df = fetch_transactions(st.session_state.username)
@@ -169,23 +209,24 @@ def finance_ui():
             st.success(f"Projected Expense for Next Month: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
 
     else:
-        st.write("### 🔐 Login / Register")
+        st.write("Login / Register")
 
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+        username_input = st.text_input("Username", key="username")
+        password_input = st.text_input("Password", type="password", key="password")
 
         if st.button("Login"):
-            if authenticate_user(username, password):
-                st.session_state.username = username
+            if authenticate_user(username_input, password_input):
+                st.session_state.username = username_input
                 st.session_state.page = "dashboard"
-                st.success("Login successful! 🎉")
+                st.success("Login successful!")
+                st.experimental_rerun()
             else:
                 st.error("Invalid username or password!")
 
         if st.button("Register"):
-            if username and password:
-                register_user(username, password)
-                st.success("User registered! Now login.")
+            if username_input and password_input:
+                msg = register_user(username_input, password_input)
+                st.success(msg)
             else:
                 st.error("Please enter both username and password.")
 
