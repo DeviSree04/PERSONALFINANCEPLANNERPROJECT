@@ -65,7 +65,16 @@ def add_transaction(username, transaction_type, amount, category, date):
                    (username, transaction_type, amount, category, date))
     conn.commit()
     conn.close()
-
+def add_transaction(username, transaction_type, amount, category, date):
+    st.write("Inserting transaction with:")
+    st.write(f"Username: {username}, Type: {transaction_type}, Amount: {amount}, Category: {category}, Date: {date}")
+    
+    conn = sqlite3.connect("finance.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO transactions (username, type, amount, category, date) VALUES (?, ?, ?, ?, ?)",
+                   (username, transaction_type, amount, category, date))
+    conn.commit()
+    conn.close()
 # Fetch transactions for the logged-in user
 def fetch_transactions(username):
     conn = sqlite3.connect("finance.db")
@@ -154,7 +163,11 @@ def finance_ui():
             visualize_expenses(st.session_state["username"])
 
 # Run app
-if __name__ == "__main__":
+if __name__ == "_main_":
+    import os
+    st.write("Finance DB Path:", os.path.abspath("finance.db"))
+    st.write("User DB Path:", os.path.abspath("users.db"))
+    
     init_user_db()
     init_finance_db()
     finance_ui()
