@@ -94,7 +94,7 @@ def finance_ui():
 
     # Initialize session state
     if "username" not in st.session_state:
-        st.session_state.username = None
+        username = st.session_state.get("username", "")
 
     if "page" not in st.session_state:
         st.session_state["page"] = "welcome"
@@ -114,8 +114,8 @@ def finance_ui():
 
         if st.button("Login"):
             if authenticate_user(username_input, password_input):
-                st.session_state.username = username_input
-                st.session_state.page = "dashboard"
+                st.session_state["username"] = username
+                st.session_state["page"] = "dashboard"
                 st.success("Login successful!")
                 st.experimental_rerun()
             else:
@@ -130,10 +130,10 @@ def finance_ui():
 
     # Dashboard Page
     elif st.session_state.page == "dashboard":
-        st.write(f"🎉 Welcome, {st.session_state.username}! You are now in the dashboard.")
+        st.write(f" Welcome, {st.session_state.username}! You are now in the dashboard.")
 
         # Transaction Entry
-        st.write("### Enter Your Transaction Details")
+        st.write("Enter Your Transaction Details")
         transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
         amount = st.number_input("Enter Amount (₹)", min_value=1.0)
         category = st.text_input("Expense Category (e.g., Food, Rent, Travel)")
