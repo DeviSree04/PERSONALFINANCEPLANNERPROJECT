@@ -113,7 +113,6 @@ def finance_ui():
         password_input = st.text_input("Password", type="password", key="password")
 
         if st.button("Login"):
-            username = st.session_state.get("username", "")  # ✅ Retrieve safely
             if authenticate_user(username_input, password_input):
                 st.session_state["username"] = username_input  # ✅ Works now!
                 st.session_state["page"] = "dashboard"
