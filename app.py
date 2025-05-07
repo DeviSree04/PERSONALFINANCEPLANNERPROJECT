@@ -163,7 +163,7 @@ def finance_ui():
             visualize_expenses(st.session_state["username"])
 
 # Run app
-if __name__ == "_main_":
+if __name__ == "__main__":
     import os
     st.write("Finance DB Path:", os.path.abspath("finance.db"))
     st.write("User DB Path:", os.path.abspath("users.db"))
