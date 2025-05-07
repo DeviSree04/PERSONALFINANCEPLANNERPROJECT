@@ -69,9 +69,11 @@ def add_transaction(username, transaction_type, amount, category, date):
 # Fetch transactions for the logged-in user
 def fetch_transactions(username):
     conn = sqlite3.connect("finance.db")
-    df = pd.read_sql_query("SELECT * FROM transactions WHERE username=?", conn, params=(username,))
-    conn.close()
-    return df
+    try:
+        df = pd.read_sql_query("SELECT * FROM transactions WHERE username=?", conn, params=(username,))
+        return df
+    finally:
+        conn.close()
 
 # Bar Chart - Expense Breakdown
 def visualize_expenses(username):
