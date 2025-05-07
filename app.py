@@ -194,13 +194,6 @@ def finance_ui():
         df = fetch_transactions(st.session_state.username)
         st.dataframe(df)
 
-        if st.button("Show Expense Trends"):
-            visualize_monthly_trends(st.session_state.username)
-
-        if st.button("Predict Next Month’s Expense"):
-            prediction = predict_future_expense(st.session_state.username)
-            st.success(f"Projected Expense: ₹{prediction:.2f}" if isinstance(prediction, float) else prediction)
-
 # Initialize Databases & Run App
 if __name__ == "__main__":
     init_user_db()
