@@ -139,12 +139,12 @@ def finance_ui():
         date = st.date_input("Date")
 
         if st.button("Add Transaction"):
-            if category.strip():
-                add_transaction(st.session_state.username, transaction_type, amount, category.strip(), str(date))
-                st.success("Transaction added.")
+            if category.strip() =="":
+                add_transaction(st.session_state["username"], transaction_type, amount, category.strip(), str(date))
+                st.warning("Category cannot be empty.")
             else:
-                st.error("Category cannot be empty.")
-
+                add_transaction(st.session_state["username"], transaction_type, amount, category.strip(), str(date))
+                st.success("Transaction added.")
         st.markdown("### Your Transactions")
         df = fetch_transactions(st.session_state.username)
         st.dataframe(df)
