@@ -1,6 +1,23 @@
 import sqlite3
 import streamlit as st
 
+def main():
+    # This must be the first Streamlit call
+    st.set_page_config(page_title="Test Transactions", layout="centered")
+    
+    st.title("Test: Add Transaction to DB")
+    
+    username = st.text_input("Username")
+    transaction_type = st.selectbox("Transaction Type", ["Income", "Expense"])
+    amount = st.number_input("Amount (₹)", min_value=0.01)
+    category = st.text_input("Category")
+    date = st.date_input("Date")
+
+    if st.button("Add Transaction"):
+        if username and category:
+            add_transaction(username, transaction_type, amount, category.strip(), str(date))
+        else:
+            st.error("Username and Category are required.")
 # Initialize finance database with transactions table
 def init_finance_db():
     conn = sqlite3.connect("finance.db")
